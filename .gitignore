@@ -1,0 +1,52 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Python environments, builds, and caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.uv-cache/
+build/
+dist/
+
+# JavaScript dependencies and build state
+node_modules/
+*.tsbuildinfo
+.vite/
+
+# Test reports and scratch verification
+.coverage
+.coverage.*
+coverage/
+htmlcov/
+coverage.xml
+test-results/
+playwright-report/
+.verification-*
+
+# Generated code, task history, and database journals
+.autocoder-data/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.log
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.swp
+*.swo

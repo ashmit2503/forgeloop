@@ -1,0 +1,4 @@
+# Sandbox images use only their Dockerfiles; omit local data and secrets.
+**
+!sandbox/
+!sandbox/**
