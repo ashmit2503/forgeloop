@@ -78,7 +78,7 @@ class DockerSandboxSession(SandboxSession):
             "--security-opt",
             "no-new-privileges",
             "--user",
-            "1000:1000",
+            _sandbox_user(),
             "--workdir",
             "/workspace",
             "--mount",
@@ -496,6 +496,16 @@ class DockerSandboxProvider(SandboxProvider):
         if not capabilities.available:
             raise InfrastructureError(capabilities.detail or "Docker is unavailable.")
         return await DockerSandboxSession.create(self.settings, runtime, workspace, limits)
+
+
+def _sandbox_user() -> str:
+    # Linux bind mounts retain host ownership, including private (0700) task
+    # directories. Match a non-root host user so the sandbox can read and write
+    # its workspace without widening file permissions. Docker Desktop on Windows
+    # and a root host process use the image's unprivileged account.
+    if hasattr(os, "getuid") and os.getuid() != 0:
+        return f"{os.getuid()}:{os.getgid()}"
+    return "1000:1000"
 
 
 def _memory_megabytes(value: str) -> int:

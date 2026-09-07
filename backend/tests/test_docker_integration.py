@@ -77,6 +77,16 @@ async def test_python_sandbox_tests_executes_and_loses_network(tmp_path: Path) -
             on_output=collect_output,
         )
         assert tests.succeeded
+        written = await session.run(
+            CommandSpec(
+                argv=["python", "-c", "from pathlib import Path; Path('created.txt').write_text('ok')"]
+            ),
+            phase=PhaseName.EXECUTE,
+            timeout_seconds=10,
+            on_output=collect_output,
+        )
+        assert written.succeeded
+        assert (tmp_path / "created.txt").read_text(encoding="utf-8") == "ok"
         assert execution.succeeded and "sandbox-python" in execution.stdout
         assert not network.succeeded
     finally:

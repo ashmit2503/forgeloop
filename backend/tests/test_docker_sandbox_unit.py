@@ -14,9 +14,15 @@ from autocoder.providers.sandboxes.docker import (
 )
 
 
+@pytest.mark.parametrize(
+    "uid,gid,user", [(1001, 1001, "1001:1001"), (501, 20, "501:20"), (0, 0, "1000:1000")]
+)
 async def test_docker_create_applies_resource_and_security_boundaries(
     tmp_path: Path,
     monkeypatch,
+    uid: int,
+    gid: int,
+    user: str,
 ) -> None:
     calls: list[list[str]] = []
 
@@ -26,6 +32,8 @@ async def test_docker_create_applies_resource_and_security_boundaries(
         return 0, "", ""
 
     monkeypatch.setattr(docker_module, "_run_control", fake_control)
+    monkeypatch.setattr(docker_module.os, "getuid", lambda: uid, raising=False)
+    monkeypatch.setattr(docker_module.os, "getgid", lambda: gid, raising=False)
     settings = Settings(data_dir=tmp_path / "data", database_url=f"sqlite:///{tmp_path / 'db.sqlite'}")
     session = await DockerSandboxSession.create(
         settings,
@@ -39,6 +47,7 @@ async def test_docker_create_applies_resource_and_security_boundaries(
     assert create[create.index("--cpus") + 1] == "0.5"
     assert create[create.index("--memory") + 1] == "256m"
     assert create[create.index("--memory-swap") + 1] == "256m"
+    assert create[create.index("--user") + 1] == user
     labels = [create[index + 1] for index, value in enumerate(create) if value == "--label"]
     assert "com.codingsandbox.managed=true" in labels
     assert any(label.startswith("com.codingsandbox.owner=") for label in labels)
